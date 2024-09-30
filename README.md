@@ -41,7 +41,7 @@
 4. Run the application:
 
    ```bash
-   python app.py
+   python3 app.py
    ```
 
 5. Open your browser and access `http://127.0.0.1:5000`.
