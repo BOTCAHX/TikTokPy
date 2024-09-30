@@ -1,0 +1,7 @@
+Flask>=2.3.2  # Framework web.
+Werkzeug>=2.3.2  # Toolkit HTTP.
+requests>=2.31.0  # HTTP requests.
+htmlmin  # Minify HTML.
+csscompressor  # Minify CSS.
+rjsmin  # Minify JavaScript.
+
