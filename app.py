@@ -54,7 +54,7 @@ def download():
         logging.error('Invalid or missing URL parameter')
         return jsonify({'status': False, 'message': 'Invalid or missing URL parameter'}), 400
     
-    api_url = f'https://widipe.com/download/ttdl?url={tiktok_url}'
+    api_url = f'https://aemt.uk.to/download/ttdl?url={tiktok_url}'
     
     try:
         response = requests.get(api_url)
