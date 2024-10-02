@@ -1,24 +1,77 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TikTok Downloader</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .material-icons {
+            font-size: 24px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+        .hover-lift {
+            transition: transform 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-5px);
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold text-center mb-6">TikTok Downloader</h1>
-        <form id="downloadForm" class="flex flex-col items-center space-y-4">
-            <div class="w-80">
-                <input type="text" id="url" name="url" placeholder="Enter TikTok URL" class="p-2 border border-gray-300 rounded w-full placeholder-purple-500 bg-purple-100">
+<body class="p-4">
+    <main class="container mx-auto glass-effect p-8 w-full max-w-4xl mt-10">
+        <h1 class="text-4xl md:text-5xl font-bold text-center mb-8 text-white">TikTok Downloader</h1>
+        <p class="text-center text-white mb-8">Download your favorite TikTok videos with ease!</p>
+        <form id="downloadForm" class="space-y-6 max-w-xl mx-auto">
+            <div class="relative">
+                <input type="text" id="url" name="url" placeholder="Enter TikTok URL" class="w-full p-4 pr-12 rounded-full bg-white bg-opacity-20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                <span class="material-icons absolute right-4 top-1/2 transform -translate-y-1/2 text-white animate-pulse">bolt</span>
             </div>
-            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Download</button>
+            <button type="submit" class="w-full bg-purple-600 text-white py-3 px-6 rounded-full font-semibold hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50 flex items-center justify-center hover-lift">
+                <span class="material-icons">download</span>
+                Download
+            </button>
         </form>
         <div id="result" class="mt-6"></div>
-    </div>
+    </main>
+
+    <footer class="text-white text-center py-4 mt-10">
+        <p class="mb-2">Made with ❤️ by <a href="https://github.com/BOTCAHX" target="_blank" class="underline hover:text-purple-300 transition duration-300">BOTCAHX</a></p>
+        <a href="https://github.com/BOTCAHX/TikTokPy" target="_blank" class="inline-flex items-center bg-white bg-opacity-20 px-4 py-2 rounded-full hover:bg-opacity-30 transition duration-300 hover-lift">
+            <span class="material-icons mr-2">code</span>
+            View on GitHub
+        </a>
+    </footer>
 
     <script>
         $(document).ready(function() {
@@ -32,6 +85,12 @@
                     didOpen: () => {
                         Swal.showLoading();
                     },
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdrop: 'rgba(0, 0, 0, 0.4)',
+                    customClass: {
+                        title: 'text-purple-600',
+                        content: 'text-gray-700'
+                    }
                 });
 
                 $.ajax({
@@ -42,38 +101,31 @@
                         Swal.close();
                         if (data.video && data.audio && data.thumbnail && data.title) {
                             Swal.fire({
-                                title: `<span class="text-sm">${data.title}</span>`,
+                                title: `<span class="text-sm font-semibold text-purple-600">${data.title}</span>`,
                                 html: `
-                                    <img src="${data.thumbnail}" alt="Thumbnail" class="mb-4 mx-auto rounded">
-                                    <div class="flex justify-center space-x-4">
-                                        <button id="videoPreview" class="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600">Video</button>
-                                        <button id="audioPreview" class="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600">Audio</button>
+                                    <img src="${data.thumbnail}" alt="Thumbnail" class="mb-4 mx-auto rounded-lg shadow-lg max-w-full h-auto">
+                                    <div class="flex flex-wrap justify-center gap-4">
+                                        <button id="videoPreview" class="bg-yellow-500 text-white py-2 px-6 rounded-full hover:bg-yellow-600 transition duration-300 flex items-center hover-lift">
+                                            <span class="material-icons">videocam</span>
+                                            Video
+                                        </button>
+                                        <button id="audioPreview" class="bg-purple-500 text-white py-2 px-6 rounded-full hover:bg-purple-600 transition duration-300 flex items-center hover-lift">
+                                            <span class="material-icons">audiotrack</span>
+                                            Audio
+                                        </button>
                                     </div>
                                 `,
                                 showCloseButton: true,
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                backdrop: 'rgba(0, 0, 0, 0.4)',
+                                customClass: {
+                                    container: 'rounded-lg',
+                                    popup: 'rounded-lg',
+                                }
                             });
 
                             $('#videoPreview').on('click', function() {
-                                Swal.fire({
-                                    title: 'Video',
-                                    html: `
-                                        <video controls class="w-full mb-4">
-                                            <source src="${data.video[0]}" type="video/mp4">
-                                            Your browser does not support the video tag.
-                                        </video>
-                                    `,
-                                    showCloseButton: true,
-                                    confirmButtonText: 'Download Video',
-                                    customClass: {
-                                        confirmButton: 'bg-yellow-500 text-white hover:bg-yellow-600'
-                                    },
-                                    preConfirm: () => {
-                                        const videoLink = document.createElement('a');
-                                        videoLink.href = data.video[0];
-                                        videoLink.download = 'video.mp4';
-                                        videoLink.click();
-                                    }
-                                });
+                                ContentType(data.video[0], 'video.mp4');
                             });
 
                             $('#audioPreview').on('click', function() {
@@ -86,16 +138,15 @@
                                         </audio>
                                     `,
                                     showCloseButton: true,
-                                    confirmButtonText: 'Download Audio',
+                                    confirmButtonText: '<span class="material-icons">file_download</span> Download Audio',
                                     customClass: {
-                                        confirmButton: 'bg-purple-500 text-white hover:bg-purple-600'
+                                        confirmButton: 'bg-purple-500 text-white hover:bg-purple-600 transition duration-300 flex items-center justify-center hover-lift'
                                     },
                                     preConfirm: () => {
-                                        const audioLink = document.createElement('a');
-                                        audioLink.href = data.audio[0];
-                                        audioLink.download = 'audio.mp3';
-                                        audioLink.click();
-                                    }
+                                        fetchFile(data.audio[0], 'audio.mp3');
+                                    },
+                                    background: 'rgba(255, 255, 255, 0.9)',
+                                    backdrop: 'rgba(0, 0, 0, 0.4)'
                                 });
                             });
                         } else {
@@ -103,6 +154,8 @@
                                 icon: 'error',
                                 title: 'Oops...',
                                 text: 'Invalid response data.',
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                backdrop: 'rgba(0, 0, 0, 0.4)'
                             });
                         }
                     },
@@ -113,10 +166,100 @@
                             icon: 'error',
                             title: 'Oops...',
                             text: 'Something went wrong!',
+                            background: 'rgba(255, 255, 255, 0.9)',
+                            backdrop: 'rgba(0, 0, 0, 0.4)'
                         });
                     }
                 });
             });
+
+            function ContentType(url, defaultFileName) {
+                fetch(url, { method: 'HEAD' })
+                    .then(response => {
+                        const contentType = response.headers.get('content-type');
+                        console.log('Content-Type:', contentType);
+                        if (contentType.startsWith('video')) {
+                            Swal.fire({
+                                title: 'Video',
+                                html: `
+                                    <video controls class="w-full mb-4 rounded-lg shadow-lg max-w-full h-auto">
+                                        <source src="${url}" type="${contentType}">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                `,
+                                showCloseButton: true,
+                                confirmButtonText: '<span class="material-icons">file_download</span> Download Video',
+                                customClass: {
+                                    confirmButton: 'bg-yellow-500 text-white hover:bg-yellow-600 transition duration-300 flex items-center justify-center hover-lift',
+                                    popup: 'rounded-lg',
+                                },
+                                preConfirm: () => {
+                                    fetchFile(url, defaultFileName);
+                                },
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                backdrop: 'rgba(0, 0, 0, 0.4)'
+                            });
+                        } else if (contentType.startsWith('image')) {
+                            Swal.fire({
+                                title: 'Photo',
+                                html: `
+                                    <img src="${url}" alt="Photo" class="w-full mb-4 rounded-lg shadow-lg max-w-full h-auto">
+                                `,
+                                showCloseButton: true,
+                                confirmButtonText: '<span class="material-icons">file_download</span> Download Photo',
+                                customClass: {
+                                    confirmButton: 'bg-yellow-500 text-white hover:bg-yellow-600 transition duration-300 flex items-center justify-center hover-lift',
+                                    popup: 'rounded-lg',
+                                },
+                                preConfirm: () => {
+                                    fetchFile(url, 'photo.jpeg');
+                                },
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                backdrop: 'rgba(0, 0, 0, 0.4)'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Unsupported Content',
+                                text: 'The provided URL does not link to a supported video or image format.',
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                backdrop: 'rgba(0, 0, 0, 0.4)'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching content type:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Failed to fetch content type!',
+                            background: 'rgba(255, 255, 255, 0.9)',
+                            backdrop: 'rgba(0, 0, 0, 0.4)'
+                        });
+                    });
+            }
+
+            function fetchFile(url, filename) {
+                fetch(url)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = filename;
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Failed to download file!',
+                            background: 'rgba(255, 255, 255, 0.9)',
+                            backdrop: 'rgba(0, 0, 0, 0.4)'
+                        });
+                    });
+            }
         });
     </script>
 </body>
