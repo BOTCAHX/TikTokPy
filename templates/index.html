@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
         body {
@@ -46,12 +48,23 @@
         .hover-lift:hover {
             transform: translateY(-5px);
         }
+        .swiper-container {
+            width: 100%;
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+        .swiper-slide {
+            background-position: center;
+            background-size: cover;
+            width: 300px;
+            height: 300px;
+        }
     </style>
 </head>
 <body class="p-4">
     <main class="container mx-auto glass-effect p-8 w-full max-w-4xl mt-10">
         <h1 class="text-4xl md:text-5xl font-bold text-center mb-8 text-white">TikTok Downloader</h1>
-        <p class="text-center text-white mb-8">Download your favorite TikTok videos with ease!</p>
+        <p class="text-center text-white mb-8">Download your favorite TikTok videos and photos with ease!</p>
         <form id="downloadForm" class="space-y-6 max-w-xl mx-auto">
             <div class="relative">
                 <input type="text" id="url" name="url" placeholder="Enter TikTok URL" class="w-full p-4 pr-12 rounded-full bg-white bg-opacity-20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400">
@@ -74,160 +87,232 @@
     </footer>
 
     <script>
-        $(document).ready(function() {
-            $('#downloadForm').on('submit', function(event) {
-                event.preventDefault();
-                const url = $('#url').val();
-
-                Swal.fire({
-                    title: 'Fetching data...',
-                    text: 'Please wait while we get the video details.',
-                    didOpen: () => {
-                        Swal.showLoading();
-                    },
-                    background: 'rgba(255, 255, 255, 0.8)',
-                    backdrop: 'rgba(0, 0, 0, 0.4)',
-                    customClass: {
-                        title: 'text-purple-600',
-                        content: 'text-gray-700'
-                    }
-                });
-
-                $.ajax({
-                    url: '/download',
-                    type: 'GET',
-                    data: { url: url },
-                    success: function(data) {
-                        Swal.close();
-                        if (data.video && data.audio && data.thumbnail && data.title) {
-                            Swal.fire({
-                                title: `<span class="text-sm font-semibold text-purple-600">${data.title}</span>`,
-                                html: `
-                                    <img src="${data.thumbnail}" alt="Thumbnail" class="mb-4 mx-auto rounded-lg shadow-lg max-w-full h-auto">
-                                    <div class="flex flex-wrap justify-center gap-4">
-                                        <button id="videoPreview" class="bg-yellow-500 text-white py-2 px-6 rounded-full hover:bg-yellow-600 transition duration-300 flex items-center hover-lift">
-                                            <span class="material-icons">videocam</span>
-                                            Video
-                                        </button>
-                                        <button id="audioPreview" class="bg-purple-500 text-white py-2 px-6 rounded-full hover:bg-purple-600 transition duration-300 flex items-center hover-lift">
-                                            <span class="material-icons">audiotrack</span>
-                                            Audio
-                                        </button>
-                                    </div>
-                                `,
-                                showCloseButton: true,
-                                background: 'rgba(255, 255, 255, 0.9)',
-                                backdrop: 'rgba(0, 0, 0, 0.4)',
-                                customClass: {
-                                    container: 'rounded-lg',
-                                    popup: 'rounded-lg',
+    $(document).ready(function() {
+        $('#downloadForm').on('submit', function(event) {
+            event.preventDefault();
+            const url = $('#url').val();
+    
+            Swal.fire({
+                title: 'Fetching data...',
+                text: 'Please wait while we get the content details.',
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdrop: 'rgba(0, 0, 0, 0.4)',
+                customClass: {
+                    title: 'text-purple-600',
+                    content: 'text-gray-700'
+                }
+            });
+    
+            $.ajax({
+                url: '/download',
+                type: 'GET',
+                data: { url: url },
+                success: function(data) {
+                    Swal.close();
+                    if (data.video && data.audio && data.title) {
+                        let contentHtml = '';
+                        let isVideo = false;
+                        let isPhoto = false;
+    
+                        const firstMedia = Array.isArray(data.video) ? data.video[0] : data.video;
+    
+                        fetch(firstMedia, { method: 'HEAD' })
+                            .then(response => {
+                                const contentType = response.headers.get('content-type');
+                                if (contentType.startsWith('video')) {
+                                    isVideo = true;
+                                } else if (contentType.startsWith('image')) {
+                                    isPhoto = true;
                                 }
-                            });
-
-                            $('#videoPreview').on('click', function() {
-                                ContentType(data.video[0], 'video.mp4');
-                            });
-
-                            $('#audioPreview').on('click', function() {
+                                
+                                if (isVideo) {
+                                    contentHtml = `
+                                        <video controls class="w-full mb-4 rounded-lg shadow-lg max-w-full h-auto">
+                                            <source src="${Array.isArray(data.video) ? data.video[0] : data.video}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    `;
+                                } else if (Array.isArray(data.video) && data.video.length > 1) {
+                                    contentHtml = `
+                                        <div class="swiper-container">
+                                            <div class="swiper-wrapper">
+                                                ${data.video.map(photo => `
+                                                    <div class="swiper-slide">
+                                                        <img src="${photo}" alt="Photo" class="w-full h-full object-cover rounded-lg">
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                            <div class="swiper-pagination"></div>
+                                            <div class="swiper-button-next"></div>
+                                            <div class="swiper-button-prev"></div>
+                                        </div>
+                                    `;
+                                } else if (isPhoto) {
+                                    contentHtml = `<img src="${data.video[0]}" alt="Thumbnail" class="mb-4 mx-auto rounded-lg shadow-lg max-w-full h-auto">`;
+                                }
+    
                                 Swal.fire({
-                                    title: 'Audio',
+                                    title: `<span class="text-sm font-semibold text-purple-600">${data.title}</span>`,
                                     html: `
-                                        <audio controls class="w-full">
-                                            <source src="${data.audio[0]}" type="audio/mp3">
-                                            Your browser does not support the audio element.
-                                        </audio>
+                                        ${contentHtml}
+                                        <div class="flex flex-wrap justify-center gap-4 mt-4">
+                                            ${isVideo ? `
+                                                <button id="videoDownload" class="bg-yellow-500 text-white py-2 px-6 rounded-full hover:bg-yellow-600 transition duration-300 flex items-center hover-lift">
+                                                    <span class="material-icons">videocam</span>
+                                                    Download Video
+                                                </button>
+                                            ` : Array.isArray(data.video) && data.video.length > 1 ? `
+                                                <button id="bulkDownload" class="bg-green-500 text-white py-2 px-6 rounded-full hover:bg-green-600 transition duration-300 flex items-center hover-lift">
+                                                    <span class="material-icons">file_download</span>
+                                                    Download All Photos
+                                                </button>
+                                            ` : `
+                                                <button id="photoPreview" class="bg-yellow-500 text-white py-2 px-6 rounded-full hover:bg-yellow-600 transition duration-300 flex items-center hover-lift">
+                                                    <span class="material-icons">image</span>
+                                                    Photo
+                                                </button>
+                                            `}
+                                            <button id="audioPreview" class="bg-purple-500 text-white py-2 px-6 rounded-full hover:bg-purple-600 transition duration-300 flex items-center hover-lift">
+                                                <span class="material-icons">audiotrack</span>
+                                                Audio
+                                            </button>
+                                        </div>
                                     `,
                                     showCloseButton: true,
-                                    confirmButtonText: '<span class="material-icons">file_download</span> Download Audio',
+                                    background: 'rgba(255, 255, 255, 0.9)',
+                                    backdrop: 'rgba(0, 0, 0, 0.4)',
                                     customClass: {
-                                        confirmButton: 'bg-purple-500 text-white hover:bg-purple-600 transition duration-300 flex items-center justify-center hover-lift'
+                                        container: 'rounded-lg',
+                                        popup: 'rounded-lg',
                                     },
-                                    preConfirm: () => {
-                                        fetchFile(data.audio[0], 'audio.mp3');
-                                    },
+                                    didOpen: () => {
+                                        if (Array.isArray(data.video) && data.video.length > 1) {
+                                            new Swiper('.swiper-container', {
+                                                slidesPerView: 1,
+                                                spaceBetween: 30,
+                                                loop: true,
+                                                pagination: {
+                                                    el: '.swiper-pagination',
+                                                    clickable: true,
+                                                },
+                                                navigation: {
+                                                    nextEl: '.swiper-button-next',
+                                                    prevEl: '.swiper-button-prev',
+                                                },
+                                            });
+                                        }
+                                    }
+                                });
+    
+                                if (isVideo) {
+                                    $('#videoDownload').on('click', function() {
+                                        fetchFile(Array.isArray(data.video) ? data.video[0] : data.video, 'video.mp4');
+                                    });
+                                } else if (Array.isArray(data.video) && data.video.length > 1) {
+                                    $('#bulkDownload').on('click', function() {
+                                        data.video.forEach((photo, index) => {
+                                            fetchFile(photo, `photo_${index + 1}.jpg`);
+                                        });
+                                    });
+                                } else {
+                                    $('#photoPreview').on('click', function() {
+                                        ContentType(data.video[0], 'photo.jpg');
+                                    });
+                                }
+    
+                                $('#audioPreview').on('click', function() {
+                                    Swal.fire({
+                                        title: 'Audio',
+                                        html: `
+                                            <audio controls class="w-full">
+                                                <source src="${data.audio[0]}" type="audio/mp3">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        `,
+                                        showCloseButton: true,
+                                        confirmButtonText: '<span class="material-icons">file_download</span> Download Audio',
+                                        customClass: {
+                                            confirmButton: 'bg-purple-500 text-white hover:bg-purple-600 transition duration-300 flex items-center justify-center hover-lift'
+                                        },
+                                        preConfirm: () => {
+                                            fetchFile(data.audio[0], 'audio.mp3');
+                                        },
+                                        background: 'rgba(255, 255, 255, 0.9)',
+                                        backdrop: 'rgba(0, 0, 0, 0.4)'
+                                    });
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error fetching content type:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Failed to fetch content type!',
                                     background: 'rgba(255, 255, 255, 0.9)',
                                     backdrop: 'rgba(0, 0, 0, 0.4)'
                                 });
                             });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: 'Invalid response data.',
-                                background: 'rgba(255, 255, 255, 0.9)',
-                                backdrop: 'rgba(0, 0, 0, 0.4)'
-                            });
-                        }
-                    },
-                    error: function(error) {
-                        Swal.close();
-                        console.error('Error:', error);
+                    } else {
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            text: 'Something went wrong!',
+                            text: 'Invalid response data.',
                             background: 'rgba(255, 255, 255, 0.9)',
                             backdrop: 'rgba(0, 0, 0, 0.4)'
                         });
                     }
-                });
+                },
+                error: function(error) {
+                    Swal.close();
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        backdrop: 'rgba(0, 0, 0, 0.4)'
+                    });
+                }
             });
-
-            function ContentType(url, defaultFileName) {
-                fetch(url, { method: 'HEAD' })
-                    .then(response => {
-                        const contentType = response.headers.get('content-type');
-                        console.log('Content-Type:', contentType);
-                        if (contentType.startsWith('video')) {
-                            Swal.fire({
-                                title: 'Video',
-                                html: `
-                                    <video controls class="w-full mb-4 rounded-lg shadow-lg max-w-full h-auto">
-                                        <source src="${url}" type="${contentType}">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                `,
-                                showCloseButton: true,
-                                confirmButtonText: '<span class="material-icons">file_download</span> Download Video',
-                                customClass: {
-                                    confirmButton: 'bg-yellow-500 text-white hover:bg-yellow-600 transition duration-300 flex items-center justify-center hover-lift',
-                                    popup: 'rounded-lg',
-                                },
-                                preConfirm: () => {
-                                    fetchFile(url, defaultFileName);
-                                },
-                                background: 'rgba(255, 255, 255, 0.9)',
-                                backdrop: 'rgba(0, 0, 0, 0.4)'
-                            });
-                        } else if (contentType.startsWith('image')) {
-                            Swal.fire({
-                                title: 'Photo',
-                                html: `
-                                    <img src="${url}" alt="Photo" class="w-full mb-4 rounded-lg shadow-lg max-w-full h-auto">
-                                `,
-                                showCloseButton: true,
-                                confirmButtonText: '<span class="material-icons">file_download</span> Download Photo',
-                                customClass: {
-                                    confirmButton: 'bg-yellow-500 text-white hover:bg-yellow-600 transition duration-300 flex items-center justify-center hover-lift',
-                                    popup: 'rounded-lg',
-                                },
-                                preConfirm: () => {
-                                    fetchFile(url, 'photo.jpeg');
-                                },
-                                background: 'rgba(255, 255, 255, 0.9)',
-                                backdrop: 'rgba(0, 0, 0, 0.4)'
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Unsupported Content',
-                                text: 'The provided URL does not link to a supported video or image format.',
-                                background: 'rgba(255, 255, 255, 0.9)',
-                                backdrop: 'rgba(0, 0, 0, 0.4)'
-                            });
-                        }
-                    })
-                    .catch(error => {
+        });
+    
+        function ContentType(url, defaultFileName) {
+            fetch(url, { method: 'HEAD' })
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    console.log('Content-Type:', contentType);
+                    if (contentType.startsWith('image')) {
+                        Swal.fire({
+                            title: 'Photo',
+                            html: `
+                                <img src="${url}" alt="Photo" class="w-full mb-4 rounded-lg shadow-lg max-w-full h-auto">
+                            `,
+                            showCloseButton: true,
+                            confirmButtonText: '<span class="material-icons">file_download</span> Download Photo',
+                            customClass: {
+                                confirmButton: 'bg-yellow-500 text-white hover:bg-yellow-600 transition duration-300 flex items-center justify-center hover-lift',
+                                popup: 'rounded-lg',
+                            },
+                            preConfirm: () => {
+                                fetchFile(url, defaultFileName);
+                            },
+                            background: 'rgba(255, 255, 255, 0.9)',
+                            backdrop: 'rgba(0, 0, 0, 0.4)'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Unsupported Content',
+                            text: 'The provided URL does not link to a supported image format.',
+                            background: 'rgba(255, 255, 255, 0.9)',
+                            backdrop: 'rgba(0, 0, 0, 0.4)'
+                        });
+                    }
+                })
+                                .catch(error => {
                         console.error('Error fetching content type:', error);
                         Swal.fire({
                             icon: 'error',
@@ -237,30 +322,33 @@
                             backdrop: 'rgba(0, 0, 0, 0.4)'
                         });
                     });
-            }
-
-            function fetchFile(url, filename) {
-                fetch(url)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = filename;
-                        link.click();
-                        URL.revokeObjectURL(link.href);
-                    })
-                    .catch(error => {
-                        console.error('Download error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: 'Failed to download file!',
-                            background: 'rgba(255, 255, 255, 0.9)',
-                            backdrop: 'rgba(0, 0, 0, 0.4)'
-                        });
+        }
+    
+        function fetchFile(url, filename) {
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const a = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error fetching file:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to download file!',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        backdrop: 'rgba(0, 0, 0, 0.4)'
                     });
-            }
-        });
-    </script>
+                });
+        }
+    });
+ </script>
 </body>
 </html>
