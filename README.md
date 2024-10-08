@@ -1,4 +1,4 @@
-# TikTokPy Downloader
+### TikTokPy Downloader
 
 **TikTokPy Downloader** is a web application that allows users to easily download videos and audio from TikTok. This application uses Flask as the backend and integrates with an external API to retrieve video details.
 
