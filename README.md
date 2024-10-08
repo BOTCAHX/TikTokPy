@@ -45,7 +45,15 @@
    ```
 
 5. Open your browser and access `http://127.0.0.1:5000`.
-
+   
+## Build the Docker image
+```
+docker build -t flask-app .
+```
+## Run the Docker container
+```
+docker run -p 5000:5000 flask-app
+```
 ## How to Use
 
 1. Enter the TikTok video URL in the provided field.
