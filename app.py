@@ -14,11 +14,11 @@ logging.basicConfig(level=logging.INFO)
 
 # Regex
 URL_REGEX = re.compile(
-    r'^(https?:\/\/)?'  # http:// _+ https://
-    r'((([A-Za-z]{1,3})+\.)+([A-Za-z]{2,6})|'
-    r'(([0-9]{1,3}\.){3}[0-9]{1,3}))'
-    r'(:[0-9]{1,5})?'
-    r'(\/.*)?$'
+    r'^(https?:\/\/)?'  # http:// or https://
+    r'((?:www\.|m\.)?tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)'  # domain TikTok
+    r'(:[0-9]{1,5})?'  # optional port
+    r'(\/[@\w\/.-]*)?'  # TikTok path (optional)
+    r'(\?[^\s]*)?$'  # optional query string
 )
 
 @app.route('/')
