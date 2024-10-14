@@ -8,9 +8,11 @@ def tt_scrape(url):
             'lang': 'id'
         }
         headers = {
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
-        }
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        "X-Forwarded-For": "104.21.14.35"
+       }
+
         response = requests.post('https://tikvideo.app/api/ajaxSearch', data=data, headers=headers)
         response.raise_for_status()
 
