@@ -4,4 +4,5 @@ requests>=2.31.0  # HTTP requests.
 htmlmin  # Minify HTML.
 csscompressor  # Minify CSS.
 rjsmin  # Minify JavaScript.
+beautifulsoup4  # Parsing HTML.
 

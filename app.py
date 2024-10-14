@@ -1,11 +1,11 @@
 import os
 from flask import Flask, request, jsonify, render_template
-import requests
 import logging
 import re
 from htmlmin.main import minify
 from csscompressor import compress as compress_css
 from rjsmin import jsmin as compress_js
+from scraper.scrape import tt_scrape
 
 app = Flask(__name__)
 
@@ -53,19 +53,14 @@ def download():
         logging.error('Invalid or missing URL parameter')
         return jsonify({'status': False, 'message': 'Invalid or missing URL parameter'}), 400
     
-    api_url = f'https://aemt.uk.to/download/ttdl?url={tiktok_url}'
-    
     try:
-        response = requests.get(api_url)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        logging.error(f'Error contacting API: {e}')
-        return jsonify({'status': False, 'message': 'Error contacting API'}), 500
-    
-    data = response.json()
+        data = tt_scrape(tiktok_url)
+    except Exception as e:
+        logging.error(f'Error scraping data: {e}')
+        return jsonify({'status': False, 'message': 'Error scraping data'}), 500
     
     if data.get('status'):
-        return jsonify(data['result'])
+        return jsonify(data)
     else:
         logging.warning('Failed to fetch video details')
         return jsonify({'status': False, 'message': 'Failed to fetch video details'}), 400
@@ -73,3 +68,4 @@ def download():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+    
