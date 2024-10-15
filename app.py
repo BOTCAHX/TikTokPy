@@ -13,7 +13,6 @@ from scraper.scrape import tt_scrape
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import werkzeug
 
 load_dotenv()
 
@@ -32,7 +31,7 @@ CORS(app)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["200 per day", "5000 per hour"]  # Limit global
 )
 
 # Pretty print JSON responses
@@ -49,13 +48,6 @@ URL_REGEX = re.compile(
     r'(\/[@\w\/.-]*)?'  # TikTok path (optional)
     r'(\?[^\s]*)?$'  # optional query string
 )
-
-@app.after_request
-def after_request(response):
-    werkzeug_version = werkzeug.__version__
-    python_version = sys.version.split()[0]
-    response.headers['Server'] = f'Werkzeug/{werkzeug_version} Python/{python_version}'
-    return response
 
 @app.route('/')
 def index():
@@ -82,7 +74,7 @@ def index():
     return minified_template
 
 @app.route('/download', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("5000 per minute")  # Limiter
 def download():
     tiktok_url = request.args.get('url')
     
@@ -105,4 +97,3 @@ def download():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-    
