@@ -1,13 +1,42 @@
 import os
+import sys
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template
 import logging
 import re
 from htmlmin.main import minify
 from csscompressor import compress as compress_css
 from rjsmin import jsmin as compress_js
+from flask_compress import Compress
+from flask_minify import Minify
 from scraper.scrape import tt_scrape
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import werkzeug
+
+load_dotenv()
 
 app = Flask(__name__)
+
+# Compress responses
+Compress(app)
+
+# Minify HTML, CSS, and JS
+Minify(app=app, html=True, js=True, cssless=True)
+
+# Enable CORS
+CORS(app)
+
+# Enable rate limiting
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+# Pretty print JSON responses
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 # Logs
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +49,13 @@ URL_REGEX = re.compile(
     r'(\/[@\w\/.-]*)?'  # TikTok path (optional)
     r'(\?[^\s]*)?$'  # optional query string
 )
+
+@app.after_request
+def after_request(response):
+    werkzeug_version = werkzeug.__version__
+    python_version = sys.version.split()[0]
+    response.headers['Server'] = f'Werkzeug/{werkzeug_version} Python/{python_version}'
+    return response
 
 @app.route('/')
 def index():
@@ -46,6 +82,7 @@ def index():
     return minified_template
 
 @app.route('/download', methods=['GET'])
+@limiter.limit("10 per minute")
 def download():
     tiktok_url = request.args.get('url')
     
