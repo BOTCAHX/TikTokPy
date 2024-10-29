@@ -43,9 +43,9 @@ logging.basicConfig(level=logging.INFO)
 # Regex
 URL_REGEX = re.compile(
     r'^(https?:\/\/)?'  # http:// or https://
-    r'((?:www\.|m\.)?tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)'  # domain TikTok
+    r'((?:www\.|m\.)?tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com|v\.douyin\.com)'  # domain TikTok & Douyin
     r'(:[0-9]{1,5})?'  # optional port
-    r'(\/[@\w\/.-]*)?'  # TikTok path (optional)
+    r'(\/[@\w\/.-]*)?'  # path (optional)
     r'(\?[^\s]*)?$'  # optional query string
 )
 

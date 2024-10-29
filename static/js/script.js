@@ -14,7 +14,7 @@ $(document).ready(function() {
         const url = $('#url').val();
 
         Swal.fire({
-            title: 'Fetching data...',
+            title: 'Loading...',
             text: 'Please wait while we get the content details.',
             didOpen: () => {
                 Swal.showLoading();
